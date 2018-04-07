@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmake
+from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.sql import func
 from passlib.apps import custom_app_context as pwd_context
@@ -17,7 +17,7 @@ class User(Base):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
-    username = Column(string(32), index=True)
+    username = Column(String(32), index=True)
     email = Column(String)
     password_hash = Column(String(64))
 
@@ -37,7 +37,7 @@ class User(Base):
 class Product(Base):
     __tablename__ = 'product'
 
-    id = column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String)
     category = Column(String)
     description = Column(String)
@@ -48,8 +48,8 @@ class Product(Base):
         """Return object data in easily serializeable format"""
         return {
         'name' : self.name,
-        'category' : self.category
-        'price' : self.price
+        'category' : self.category,
+        'price' : self.price,
         }
 
 ####### INSERT AT THE END OF FILE #######
