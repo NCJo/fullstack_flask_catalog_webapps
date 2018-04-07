@@ -15,6 +15,7 @@ secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x
 # Users database
 class User(Base)
     __tablename__ = 'user'
+    
     id = Column(Integer, primary_key=True)
     username = Column(string(32), index=True)
     email = Column(String)
@@ -35,10 +36,11 @@ class User(Base)
 # Product database
 class Product(Base):
     __tablename__ = 'product'
+
     id = column(Integer, primary_key=True)
     name = Column(String)
     category = Column(String)
-    price = Column(String)
+    description = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
     # JSON API inside Object database class
     @property
