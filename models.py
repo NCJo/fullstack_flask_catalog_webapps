@@ -29,9 +29,25 @@ class User(Base):
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
-    # Genrate token with expiration time
+    # Generate token with expiration time
+    def generate_auth_token(self, expiration=600):
+        s = Serializer(secret_key, expires_in = expiration)
+        return s.dumps({'id': self.id })
 
     # Use for verify auth token
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(secret_key)
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            # Valid token, but expired
+            return None
+        except BadSignature:
+            return None
+        user_id = data['id']
+        return user_id
+
 
 # Product database
 class Product(Base):
