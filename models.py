@@ -42,6 +42,7 @@ class Product(Base):
     category = Column(String)
     description = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
+
     # JSON API inside Object database class
     @property
     def serialize(self):

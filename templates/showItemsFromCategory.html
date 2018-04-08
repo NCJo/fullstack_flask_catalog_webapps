@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+
+  </head>
+
+  <body>
+    {% for category in catalog %}
+    <h3>{{ category.category }}</h3>
+    {% endfor %}
+    <br><br>
+    {% for item in items %}
+    <h4>{{ item.name }}</h4>
+    {% endfor %}
+  </body>
+</html>
