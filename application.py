@@ -33,26 +33,6 @@ app = Flask(__name__)
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 
-####### CREATE UNIQUE INSTANCE FOR EACH UNIQUE USERS #######
-def getUserID(email):
-    try:
-        user = session.query(User).filter_by(email = email).one()
-        return user.id
-    except:
-        return None
-
-def getUserInfo(user_id):
-    user = session.query(User).filter_by(id = user_id).one()
-    return user
-
-def createNewUser(login_session):
-    newUser = User(name = login_session['username'], email = login_session['email'])
-    session.add(newUser)
-    session.commit()
-    user = session.query(User).filter_by(email = login_session['email']).one()
-    return user
-####### END #######
-
 ####### OAUTH2 GOOGLE Login #######
 @app.route('/login')
 def showLogin():
@@ -149,7 +129,7 @@ def gconnect():
         response = make_response(json.dumps("Token's user ID does not match given user ID"), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    # If the client ids do not match, then my app is trying to use a
+    # If the client ids do not match, then app is trying to use a
     # client_id that doesn't belong to it. So I shouldn't allow for this.
     # Verify that the access token is valid for this app.
     if result['issued_to'] != CLIENT_ID:
@@ -159,9 +139,11 @@ def gconnect():
     # Check if the user is already logged in
     # ! Credentials shouldn't been stored in the session
     # Do not: stored_credentials = login_session.get('credentials')
-    # TODO: check why use .get('access_token') instead of 'credentials'
-    stored_credentials = login_session.get('access_token')
+    # TODO: Delete above comment when everything works
+    stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
+    print stored_credentials
+    print stored_gplus_id
     # So assuming that none of these if-statements were true, I now have a valid
     # access token and my user is successfully able to login to my server.
     if stored_credentials is not None and gplus_id == stored_gplus_id:
@@ -199,11 +181,11 @@ def gconnect():
             print(i)
 
     # TODO: uncomment
-    # # If user doesn't exist, make a new one.
-    # user_id = getUserID(login_session['email'])
-    # if not user_id:
-    #     user_id = createUser(login_session)
-    # login_session['user_id'] = user_id
+    # If user doesn't exist, make a new one.
+    user_id = getUserID(login_session['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
 
     # 7) If the above worked, a html response is returned confirming the login
     # to the Client.
@@ -308,6 +290,26 @@ def showDescription(product_category, item_name):
 # Route /catalog/Meats/Ribeye/edit/(logged in) -> edit title:description:category
 # Route /catalog/Meats/Ribeye/delete(logged in) -> Are you sure you want to delete
 # Route /catalog.json -> provide JSON endpoint
+
+####### CREATE UNIQUE INSTANCE FOR EACH UNIQUE USERS #######
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email = email).one()
+        return user.id
+    except:
+        return None
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id = user_id).one()
+    return user
+
+def createUser(login_session):
+    newUser = User(username = login_session['username'], email = login_session['email'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email = login_session['email']).one()
+    return user.id
+####### END #######
 
 
 if __name__ == '__main__':
