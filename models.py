@@ -66,7 +66,6 @@ class Product(Base):
         return {
         'name' : self.name,
         'category' : self.category,
-        'price' : self.price,
         }
 
 ####### INSERT AT THE END OF FILE #######
