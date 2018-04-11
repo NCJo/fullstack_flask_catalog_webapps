@@ -1,0 +1,17 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+
+  </head>
+
+  <body>
+    {% for category in catalog %}
+    <h2>{{ category.name }}</h2>
+    {% endfor %}
+    <br><br>
+
+    <h3>{{ item.name }}</h3>
+    <h4>{{ item.description }}</h4>
+
+  </body>
+</html>

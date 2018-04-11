@@ -1,89 +1,89 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
-from models import Base, Product
+import datetime
+from models import *
 
 engine = create_engine('sqlite:///product.db')
-
 # Bind the engine to the metadata of the Base class so that the
 # declaratives can be accessed through a DBSession instance
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
-
-# A DBSession() instance established all conversations with the  database
+# A DBSession() instance establishes all conversations with the database
 # and represents a "staging zone" for all the objects loaded into the
 # database session object. Any change made against the objects in the
 # session won't be persisted into the database until you call
-# session.commit(). If you are not happy about the changes, you can
-# revert all of them back to the last commit by calling session.rollback()
+# session.commit(). If you're not happy about the changes, you can
+# revert all of them back to the last commit by calling
+# session.rollback()
 session = DBSession()
 
-# 1 veggie
-cilantro = Product(name="Cilantro", category="Vegetables", description="A delicious veggie suits for any type of cooking.")
+# Delete Categories if exisitng.
+session.query(Category).delete()
+# Delete Items if exisitng.
+session.query(Items).delete()
+# Delete Users if exisitng.
+session.query(User).delete()
 
-session.add(cilantro)
-session.commit()
-
-# 1 veggie
-napa = Product(name="Napa Cabbage", category="Vegetables", description="Napa cabbage is suits for mainly soup as it has a sweet tastes infused in it.")
-
-session.add(napa)
-session.commit()
-
-# 2 meat
-ribeye = Product(name="Ribeye Steak", category="Meats", description="A very juicy cut of beef.")
-
-session.add(ribeye)
-session.commit()
-
-# 2 meat
-porkshoulder = Product(name="Pork Shoulder Blade", category="Meats", description="Very high fat cut of pork, suits for anything but being healthy.")
-
-session.add(porkshoulder)
-session.commit()
-
-# 3 bread
-bagel = Product(name="Bagel", category="Breads", description="Best for everyday's morning.")
-
-session.add(bagel)
-session.commit()
-
-# 3 bread
-whitebread = Product(name="White Bread", category="Breads", description="A generic white bread with nothing special about it.")
-
-session.add(whitebread)
-session.commit()
-
-# 4 snack
-cookie = Product(name="Cookie", category="Snacks", description="A generic cookie, but very delicious one at that.")
-
-session.add(cookie)
-session.commit()
-
-# 5 dairies
-milk = Product(name="Milk", category="Dairies", description="A delectable milk, from a delectable cows.")
-
-session.add(milk)
-session.commit()
-
-# 6 fish
-salmon = Product(name="Salmon", category="Fish", description="Anarctica cought salmon, not sure how it could get that far south.")
-
-session.add(salmon)
-session.commit()
-
-# 7 spice
-oregano = Product(name="Oregano", category="Spices", description="Oregano is perfect with Italian cuisine.")
-
-session.add(oregano)
-session.commit()
-
-# 8 canned food
-tuna = Product(name="Tuna Can", category="Canned Food", description="These canned food will stay tasty for centuries to come.")
-
-session.add(tuna)
+# Create fake users
+User1 = User(username="Jay Norman", email="abc@efg.com")
+session.add(User1)
 session.commit()
 
 
-print("Add Many Products")
+# Create fake categories
+Category1 = Category(name="Football",
+                      user_id=1)
+session.add(Category1)
+session.commit()
+
+Category2 = Category(name="Cars",
+                      user_id=2)
+session.add(Category2)
+session.commit
+
+Category3 = Category(name="Snacks",
+                      user_id=1)
+session.add(Category3)
+session.commit()
+
+Category4 = Category(name="Gadgets",
+                      user_id=1)
+session.add(Category4)
+session.commit()
+
+Category5 = Category(name="Food",
+                      user_id=1)
+session.add(Category5)
+session.commit()
+
+# Populate a category with items for testing
+# Using different users for items also
+Item1 = Items(name="Football Boots",
+               dateCreated=datetime.datetime.now(),
+               description="Shoes to play football in.",
+               image="http://bit.ly/2qHbHxd",
+               category_id=1,
+               user_id=1)
+session.add(Item1)
+session.commit()
+
+Item2 = Items(name="Football Shirt",
+               dateCreated=datetime.datetime.now(),
+               description="Shirt to play football in.",
+               image="http://bit.ly/2pb59qn",
+               category_id=1,
+               user_id=1)
+session.add(Item2)
+session.commit()
+
+Item3 = Items(name="Football",
+               dateCreated=datetime.datetime.now(),
+               description="A Football.",
+               image="http://bit.ly/2pJSPR1",
+               category_id=1,
+               user_id=1)
+session.add(Item3)
+session.commit()
+
+print "Your database has been populated with fake data!"

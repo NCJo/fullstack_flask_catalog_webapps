@@ -6,11 +6,11 @@
 
   <body>
     {% for category in catalog %}
-    <h3>{{ category.category }}</h3>
+    <h3>{{ category.name }}</h3>
     {% endfor %}
     <br><br>
-    {% for item in catalog %}
-    <h4>{{ item.name }}</h4><h5>{{ item.category }}</h5>
+    {% for item in items %}
+    <h4>{{ item.name }}</h4><h5>{{ item.category.name }}</h5>
     {% endfor %}
   </body>
 </html>

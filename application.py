@@ -1,5 +1,5 @@
 # From database
-from models import Base, User, Product
+from models import Base, User, Category, Items
 
 from flask import Flask, jsonify, request, url_for, abort, g, render_template, redirect, flash
 import os
@@ -21,7 +21,7 @@ import json
 # Login Validation
 from flask import session as login_session
 
-### SET UP ###
+####### SET UP #######
 auth = HTTPBasicAuth()
 
 engine = create_engine('sqlite:///product.db')
@@ -32,6 +32,7 @@ app = Flask(__name__)
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
+####### END Setup #######
 
 ####### OAUTH2 GOOGLE Login #######
 @app.route('/login')
@@ -203,7 +204,6 @@ def gconnect():
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session['credentials']
-
     # Ensure to only disconnect a connected user
     if access_token is None:
         response =make_response(json.dumps('Current User Not Connected'), 401)
@@ -223,8 +223,9 @@ def gdisconnect():
             del login_session['username']
             del login_session['email']
             del login_session['picture']
+            del login_session['user_id']
         except:
-            print "Remaining items in login_session:"
+            print "Remaining items in login_session 200:"
             for i in login_session:
                 print i
 
@@ -233,14 +234,25 @@ def gdisconnect():
     else:
         # If the given toekn was invalid, do the following
         response = make_response(json.dumps("Failed to revoke token for given user"), 400)
+        # TODO: this section is to get rid of login_session in case the token
+        # is expired on the google server and it kept return 400
+        try:
+            del login_session['credentials']
+            del login_session['gplus_id']
+            del login_session['username']
+            del login_session['email']
+            del login_session['picture']
+            del login_session['user_id']
+        except:
+            print "Remaining items in login_session 400:"
+            for i in login_session:
+                print i
         response.headers['Content-Type'] = 'application/json'
         return response
-
-
 ####### END #######
 
 
-####### OAUTH2 authentication #######
+####### User Authorization #######
 @auth.verify_password
 def verify_password(username_or_token, password):
     '''
@@ -262,30 +274,57 @@ def verify_password(username_or_token, password):
 
 ####### END #######
 
-
-# Route /
+####################
+# Routes
+####################
 @app.route('/')
 @app.route('/catalog')
 def showCatalog():
-    catalog = session.query(Product).order_by(desc(Product.name)).group_by(Product.category)
-    return render_template('main.html', catalog = catalog)
+    catalog = session.query(Category).order_by(desc(Category.name))
+    items = session.query(Items).order_by(desc(Items.dateCreated)).limit(5)
+    return render_template('main.html', catalog = catalog, items = items)
 
 # Route /catalog/Meats/items -> show list of items
-@app.route('/catalog/<product_category>/items')
-def showItems(product_category):
-    catalog = session.query(Product).order_by(desc(Product.name)).group_by(Product.category)
-    items_list = session.query(Product).filter_by(category = product_category)
-    return render_template('showItemsFromCategory.html', catalog = catalog, items = items_list )
+@app.route('/catalog/<path:category_name>/items')
+def showItems(category_name):
+    catalog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
+    category = session.query(Category).filter_by(name=category_name).one()
+    items_list = session.query(Items).filter_by(category = category).order_by(asc(Items.name)).all()
+    count = session.query(Items).filter_by(category = category).count()
+    creator = getUserInfo(category.user_id)
+    if 'username' not in login_session or creator.id != login_session['user_id']:
+        return render_template('public_showItemsFromCategory.html', catalog = catalog, items = items_list, count = count)
+    else:
+        owner = getUserInfo(login_session['user_id'])
+        render_template('private_showItemsFromCategory.html', catalog = catalog, items = items_list, count = count, owner = owner)
 
 # Route /catalog/Meats/Ribeye -> show description of the item
-@app.route('/catalog/<product_category>/<item_name>')
-def showDescription(product_category, item_name):
-    catalog = session.query(Product).order_by(desc(Product.name)).group_by(Product.category)
-    item_name = session.query(Product).filter_by(name = item_name)
-    return render_template('showItemDescription.html', catalog = catalog, item = item_name)
+@app.route('/catalog/<path:category>/<path:item_name>')
+def showDescription(category, item_name):
+    catalog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
+    category = session.query(Category).filter_by(name=category).one()
+    item = session.query(Items).filter_by(name=item_name).one()
+    creator = getUserInfo(item.user_id)
+    if 'username' not in login_session or creator != login_session['user_id']:
+        return render_template('public_showItemDescription.html', catalog = catalog, item = item)
+    else:
+        owner = getUserInfo(login_session[user_id])
+        return render_template('private_showItemDescription.html', catalog = catalog, item = item, owner = owner)
 
-
-# Route /catalog/(logged in)
+# Route /catalog/addcategory -> add new category
+@app.route('/catalog/addcategory', methods=['GET', 'POST'])
+@auth.login_required
+def addCategory():
+    if request.method == 'POST':
+        newCategory = Category(name=request.form['name'],
+                               user_id=login_session['user_id'])
+        print newCategory
+        session.add(newCategory)
+        session.commit()
+        flash('New Category is Successully Added!')
+        return redirect(url_for('showCatalog'))
+    else:
+        return render_template('private_addCategory.html')
 # Route /catalog/Meats/Ribeye/(logged in) -> show edit and delete button
 # Route /catalog/Meats/Ribeye/edit/(logged in) -> edit title:description:category
 # Route /catalog/Meats/Ribeye/delete(logged in) -> Are you sure you want to delete

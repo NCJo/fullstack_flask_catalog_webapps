@@ -1,7 +1,7 @@
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime
+import datetime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy import create_engine
 from sqlalchemy.sql import func
 from passlib.apps import custom_app_context as pwd_context
@@ -17,7 +17,7 @@ class User(Base):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(32), index=True)
+    username = Column(String(250), nullable=False)
     email = Column(String)
     password_hash = Column(String(64))
 
@@ -48,16 +48,14 @@ class User(Base):
         user_id = data['id']
         return user_id
 
-
 # Product database
-class Product(Base):
-    __tablename__ = 'product'
+class Category(Base):
+    __tablename__ = 'category'
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    category = Column(String)
-    description = Column(String)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship(User, backref="category")
 
     # JSON API inside Object database class
     @property
@@ -65,7 +63,30 @@ class Product(Base):
         """Return object data in easily serializeable format"""
         return {
         'name' : self.name,
-        'category' : self.category,
+        'id' : self.id
+        }
+
+# Item Database
+class Items(Base):
+    __tablename__ = 'items'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(250), nullable=False)
+    dateCreated = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    description = Column(String(250))
+    image = Column(String(250))
+    category_id = Column(Integer, ForeignKey('category.id'))
+    category = relationship(Category)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship(User)
+
+    @property
+    def serialize(self):
+        return {
+        'name': self.name,
+        'id': self.id,
+        'description': self.description,
+        'user_id': self.user_id
         }
 
 ####### INSERT AT THE END OF FILE #######
