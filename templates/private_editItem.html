@@ -1,0 +1,35 @@
+<html>
+<head>
+
+</head>
+
+<body>
+  <h1>Edit {{item.name}}</h1>
+  <form action="{{ url_for('editItem', category_name=item.category.name, item_name=item.name) }}" method='POST'>
+  <div>
+    <label for="name">Name:</label>
+    <input type="text" name="name" value="{{ item.name }}">
+  </div>
+  <div>
+    <label for="description">Description:</label>
+    <textarea name="description" cols="30" rows="3">{{  item.description }}</textarea>
+  </div>
+  <div>
+    <label for"category">Category:</label>
+      <select name="category">
+        {% for c in category %}
+          <option value="{{ c.name }}" {% if c == item.category %} selected {% endif %}>
+            {{ c.name }}
+          </option>
+        {% endfor %}
+      </select>
+  </div>
+  <div>
+    <button type="submit">Save</button>
+    <a href={{ url_for('showCatalog') }}>
+      <button type="button">Cancel</button>
+    </a>
+  </div>
+  </form>
+</body>
+</html>

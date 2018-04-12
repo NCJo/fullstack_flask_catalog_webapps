@@ -76,8 +76,10 @@ class Items(Base):
     description = Column(String(250))
     image = Column(String(250))
     category_id = Column(Integer, ForeignKey('category.id'))
-    # when pass assign value to 'category', must pass a query object through it because of 'relationship'
+    # When pass assign value to 'category', must pass a query object through it because of 'relationship'
+    # Can access name of category by: item.category.name
     category = relationship(Category)
+    # Mainly use for verify the ownership of item (for editing, deleting)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
 

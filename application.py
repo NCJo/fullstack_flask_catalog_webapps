@@ -285,7 +285,7 @@ def showCatalog():
     return render_template('main.html', catalog = catalog, items = items)
 
 # Route /catalog/Meats/items -> show list of items
-@app.route('/catalog/<path:category_name>/items')
+@app.route('/catalog/<string:category_name>/items')
 def showItems(category_name):
     catalog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
     category = session.query(Category).filter_by(name=category_name).one()
@@ -299,7 +299,7 @@ def showItems(category_name):
         render_template('private_showItemsFromCategory.html', catalog = catalog, items = items_list, count = count, owner = owner)
 
 # Route /catalog/Meats/Ribeye -> show description of the item
-@app.route('/catalog/<path:category>/<path:item_name>')
+@app.route('/catalog/<string:category>/<string:item_name>')
 def showDescription(category, item_name):
     catalog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
     category = session.query(Category).filter_by(name=category).one()
@@ -327,7 +327,7 @@ def addCategory():
         return render_template('private_addCategory.html')
 
 # Route /catalog/<category>/edit -> edit category
-@app.route('/catalog/<path:category_name>/edit', methods=['GET', 'POST'])
+@app.route('/catalog/<string:category_name>/edit', methods=['GET', 'POST'])
 @login_required
 def editCategory(category_name):
     catalog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
@@ -339,6 +339,7 @@ def editCategory(category_name):
     # See if the current user is authorized to edit
     if creator.id != current_user.id:
         flash("Unauthorized Access, This category was made by %s" % creator.username)
+        print "hi"
         return redirect(url_for('showCatalog'))
     # POST
     if request.method == 'POST':
@@ -353,7 +354,7 @@ def editCategory(category_name):
         return render_template('private_editCategory.html', catalog = catalog, categories = editedCategory, category = category)
 
 # Route /catalog/<category>/delete -> delete category
-@app.route('/catalog/<path:category_name>/delete', methods=['GET', 'POST'])
+@app.route('/catalog/<string:category_name>/delete', methods=['GET', 'POST'])
 @login_required
 def deleteCategory(category_name):
     catelog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
@@ -372,6 +373,7 @@ def deleteCategory(category_name):
     else:
         return render_template('private_deleteCategory.html', category=deletedCategory)
 
+# Route /catalog/additem -> add new item
 @app.route('/catalog/additem', methods=['GET', 'POST'])
 @login_required
 def addItem():
@@ -389,7 +391,35 @@ def addItem():
     else:
         return render_template('private_AddItem.html', catalog=catalog)
 
-# Route /catalog/Meats/Ribeye/delete(logged in) -> Are you sure you want to delete
+# Route /catalog/category/item/edit -> edit item
+@app.route('/catalog/<string:category_name>/<string:item_name>/edit', methods=['GET', 'POST'])
+@login_required
+def editItem(category_name, item_name):
+    itemToEdit = session.query(Items).filter_by(name=item_name).one()
+    categories = session.query(Category).all()
+    # See if user have authorization to edit the item
+    creator = getUserInfo(itemToEdit.user_id)
+    current_user = getUserInfo(login_session['user_id'])
+    if creator.id != current_user.id:
+        flash("Unauthorized Access: this item was created by %s" % creator.username)
+        return redirect(url_for('showCatalog'))
+    if request.method == 'POST':
+        if request.form['name']:
+            itemToEdit.name = request.form['name']
+        if request.form['description']:
+            itemToEdit.description = request.form['description']
+        if request.form['category']:
+            itemToEdit.category = session.query(Category).filter_by(name=request.form['category']).one()
+        session.add(itemToEdit)
+        session.commit()
+        flash("Successfully Edited Item")
+        return redirect(url_for('showCatalog'))
+    else:
+        return render_template('private_editItem.html', category=categories, item=itemToEdit)
+
+# Route /catalog/category/item/delete
+
+
 # Route /catalog.json -> provide JSON endpoint
 
 ####### CREATE UNIQUE INSTANCE FOR EACH UNIQUE USERS #######
