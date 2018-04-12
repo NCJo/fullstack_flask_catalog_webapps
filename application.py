@@ -182,7 +182,6 @@ def gconnect():
         for i in data:
             print(i)
 
-    # TODO: uncomment
     # If user doesn't exist, make a new one.
     user_id = getUserID(login_session['email'])
     if not user_id:
@@ -319,18 +318,43 @@ def addCategory():
     if request.method == 'POST':
         newCategory = Category(name=request.form['name'],
                                user_id=login_session['user_id'])
-        print newCategory
         session.add(newCategory)
         session.commit()
-        flash('New Category is Successully Added!')
+        flash('New Category is Succesfully Added!')
         return redirect(url_for('showCatalog'))
     else:
         return render_template('private_addCategory.html')
 
 # Route /catalog/<category>/edit -> edit category
-@app.route('/catalog/<path:category>/edit', methods=['GET', 'POST'])
-def editCategory(category):
-    category = session.query(Category).filter_by(name=category)
+@app.route('/catalog/<path:category_name>/edit', methods=['GET', 'POST'])
+@login_required
+def editCategory(category_name):
+    catalog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
+    editedCategory = session.query(Category).filter_by(name=category_name).one()
+    category = session.query(Category).filter_by(name=category_name).one()
+    # Comparing crrent logged in user and creator
+    creator = getUserInfo(editedCategory.user_id)
+    current_user = getUserInfo(login_session['user_id'])
+    # See if the current user is authorized to edit
+    if creator.id != current_user.id:
+        flash("Unauthorized Access, This Category Belongs to %s" % creator.username)
+        return redirect(url_for('showCatalog'))
+    # POST
+    if request.method == 'POST':
+        if request.form['name']:
+            editedCategory.name = request.form['name']
+        session.add(editedCategory)
+        session.commit()
+        flash("Category is Successfully Edited.")
+        return redirect(url_for('showCatalog'))
+    else:
+        # TODO: check why passing those parameters
+        return render_template('private_editCategory.html', catalog = catalog, categories = editedCategory, category = category)
+
+
+
+
+
 
 
 # Route /catalog/Meats/Ribeye/edit/(logged in) -> edit title:description:category

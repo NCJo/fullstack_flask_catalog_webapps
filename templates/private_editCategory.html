@@ -1,0 +1,24 @@
+<html>
+  <head>
+  <body>
+    <section>
+      <div>
+        <h1>Edit {{ category.name }}</h1>
+
+        <form action="{{ url_for('editCategory', category_name = category.name) }}" method = "POST">
+          <div>
+            <label for="name">New Category Name:</label>
+            <input type="text" maxlength="250" name="name">
+          </div>
+          <div>
+            <button type="submit">Save</button>
+            <a href="{{ url_for('showCatalog') }}">
+              <button type="button">Cancel</button>
+            </a>
+          </div>
+        </form>
+      </div>
+    </section>
+  </body>
+  </head>
+</html>
