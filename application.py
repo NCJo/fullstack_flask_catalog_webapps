@@ -435,12 +435,27 @@ def deleteItem(category_name, item_name):
         return redirect(url_for('showCatalog'))
     else:
         return render_template('private_deleteItem.html', item=itemToDelete)
-        # TODO: write html for delete item, make api endpoints, get to work on front end
 
 
+# Route show all items in JSON
+@app.route('/items.json')
+def showAllItemsJSON():
+    categories = session.query(Category).all()
+    items = session.query(Items).all()
+    return jsonify(categories_json = [c.serialize for c in categories], items_json = [i.serialize for i in items])
 
+# Route show all category in JSON
+@app.route('/category.json')
+def showAllCategoryJSON():
+    categories = session.query(Category).all()
+    return jsonify(categories_json = [c.serialize for c in categories])
 
-# Route /catalog.json -> provide JSON endpoint
+# Route show all items in certain categories in JSON
+@app.route('/<string:category_name>/items.json')
+def showAllItemsinCategoryJSON(category_name):
+    selected_category = session.query(Category).filter_by(name=category_name).one()
+    items = session.query(Items).filter_by(category=selected_category).all()
+    return jsonify(showitems_json = [i.serialize for i in items])
 
 ####### CREATE UNIQUE INSTANCE FOR EACH UNIQUE USERS #######
 def getUserID(email):
