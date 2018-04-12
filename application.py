@@ -457,7 +457,7 @@ def showAllItemsinCategoryJSON(category_name):
     items = session.query(Items).filter_by(category=selected_category).all()
     return jsonify(showitems_json = [i.serialize for i in items])
 
-####### CREATE UNIQUE INSTANCE FOR EACH UNIQUE USERS #######
+####### HELPER FUNCTIONS FOR VARIOUS TASKS #######
 def getUserID(email):
     try:
         user = session.query(User).filter_by(email = email).one()
