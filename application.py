@@ -308,6 +308,7 @@ def showDescription(category, item_name):
     if 'username' not in login_session or creator != login_session['user_id']:
         return render_template('public_showItemDescription.html', catalog = catalog, item = item)
     else:
+        # TODO: check why need to pass these parameters
         owner = getUserInfo(login_session[user_id])
         return render_template('private_showItemDescription.html', catalog = catalog, item = item, owner = owner)
 
@@ -337,7 +338,7 @@ def editCategory(category_name):
     current_user = getUserInfo(login_session['user_id'])
     # See if the current user is authorized to edit
     if creator.id != current_user.id:
-        flash("Unauthorized Access, This Category Belongs to %s" % creator.username)
+        flash("Unauthorized Access, This category was made by %s" % creator.username)
         return redirect(url_for('showCatalog'))
     # POST
     if request.method == 'POST':
@@ -345,19 +346,31 @@ def editCategory(category_name):
             editedCategory.name = request.form['name']
         session.add(editedCategory)
         session.commit()
-        flash("Category is Successfully Edited.")
+        flash("Successfully Edited Category.")
         return redirect(url_for('showCatalog'))
     else:
         # TODO: check why passing those parameters
         return render_template('private_editCategory.html', catalog = catalog, categories = editedCategory, category = category)
 
+# Route /catalog/<category>/delete -> delete category
+@app.route('/catalog/<path:category_name>/delete', methods = ['GET', 'POST'])
+def deleteCategory(category_name):
+    catelog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
+    deletedCategory = session.query(Category).filter_by(name=category_name).one()
+    creator = getUserInfo(deletedCategory.user_id)
+    current_user = getUserInfo(login_session['user_id'])
+    if creator.id != current_user.id:
+        flash("Unauthorized Access, This category was made by %s" % creator.username)
+        return redirect(url_for('showCatalog'))
+    # POST
+    if request.method == 'POST':
+        session.delete(deletedCategory)
+        session.commit()
+        flash("Successfully Deleted Category.")
+        return redirect(url_for('showCatalog'))
+    else:
+        return render_template('private_deleteCategory.html', category=deletedCategory)
 
-
-
-
-
-
-# Route /catalog/Meats/Ribeye/edit/(logged in) -> edit title:description:category
 # Route /catalog/Meats/Ribeye/delete(logged in) -> Are you sure you want to delete
 # Route /catalog.json -> provide JSON endpoint
 
