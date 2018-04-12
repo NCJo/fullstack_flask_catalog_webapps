@@ -418,6 +418,26 @@ def editItem(category_name, item_name):
         return render_template('private_editItem.html', category=categories, item=itemToEdit)
 
 # Route /catalog/category/item/delete
+@app.route('/catalog/<string:category_name>/<string:item_name>/delete', methods=['GET', 'POST'])
+@login_required
+def deleteItem(category_name, item_name):
+    itemToDelete = session.query(Items).filter_by(name=item_name).one()
+    categories = session.query(Category).all()
+    creator = getUserInfo(itemToDelete.user_id)
+    current_user = getUserInfo(login_session['user_id'])
+    if creator.id != current_user.id:
+        flash("Unauthorized Access: this item was created by %s" % creator.username)
+        return redirect(url_for('showCatalog'))
+    if request.method == 'POST':
+        session.delete(itemToDelete)
+        session.commit()
+        flash('Successfully Deleted an Item')
+        return redirect(url_for('showCatalog'))
+    else:
+        return render_template('private_deleteItem.html', item=itemToDelete)
+        # TODO: write html for delete item, make api endpoints, get to work on front end
+
+
 
 
 # Route /catalog.json -> provide JSON endpoint
