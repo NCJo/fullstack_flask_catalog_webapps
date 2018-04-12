@@ -17,6 +17,7 @@ from flask import make_response
 import requests
 import httplib2
 import json
+from login_authorization_decorator import login_required
 
 # Login Validation
 from flask import session as login_session
@@ -313,7 +314,7 @@ def showDescription(category, item_name):
 
 # Route /catalog/addcategory -> add new category
 @app.route('/catalog/addcategory', methods=['GET', 'POST'])
-@auth.login_required
+@login_required
 def addCategory():
     if request.method == 'POST':
         newCategory = Category(name=request.form['name'],
@@ -325,7 +326,13 @@ def addCategory():
         return redirect(url_for('showCatalog'))
     else:
         return render_template('private_addCategory.html')
-# Route /catalog/Meats/Ribeye/(logged in) -> show edit and delete button
+
+# Route /catalog/<category>/edit -> edit category
+@app.route('/catalog/<path:category>/edit', methods=['GET', 'POST'])
+def editCategory(category):
+    category = session.query(Category).filter_by(name=category)
+
+
 # Route /catalog/Meats/Ribeye/edit/(logged in) -> edit title:description:category
 # Route /catalog/Meats/Ribeye/delete(logged in) -> Are you sure you want to delete
 # Route /catalog.json -> provide JSON endpoint
