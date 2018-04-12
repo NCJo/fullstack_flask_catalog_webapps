@@ -353,7 +353,8 @@ def editCategory(category_name):
         return render_template('private_editCategory.html', catalog = catalog, categories = editedCategory, category = category)
 
 # Route /catalog/<category>/delete -> delete category
-@app.route('/catalog/<path:category_name>/delete', methods = ['GET', 'POST'])
+@app.route('/catalog/<path:category_name>/delete', methods=['GET', 'POST'])
+@login_required
 def deleteCategory(category_name):
     catelog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
     deletedCategory = session.query(Category).filter_by(name=category_name).one()
@@ -370,6 +371,23 @@ def deleteCategory(category_name):
         return redirect(url_for('showCatalog'))
     else:
         return render_template('private_deleteCategory.html', category=deletedCategory)
+
+@app.route('/catalog/additem', methods=['GET', 'POST'])
+@login_required
+def addItem():
+    catalog = session.query(Category).all()
+    if request.method == 'POST':
+        newItemToAdd = Items(
+                        name=request.form['name'],
+                        description=request.form['description'],
+                        category=session.query(Category).filter_by(name=request.form['category']).one(),
+                        user_id=login_session['user_id'])
+        session.add(newItemToAdd)
+        session.commit()
+        flash("Successfully Added New Item")
+        return redirect(url_for('showCatalog'))
+    else:
+        return render_template('private_AddItem.html', catalog=catalog)
 
 # Route /catalog/Meats/Ribeye/delete(logged in) -> Are you sure you want to delete
 # Route /catalog.json -> provide JSON endpoint

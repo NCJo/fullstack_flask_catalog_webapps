@@ -76,6 +76,7 @@ class Items(Base):
     description = Column(String(250))
     image = Column(String(250))
     category_id = Column(Integer, ForeignKey('category.id'))
+    # when pass assign value to 'category', must pass a query object through it because of 'relationship'
     category = relationship(Category)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)

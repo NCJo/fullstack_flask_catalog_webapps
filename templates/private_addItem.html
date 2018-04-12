@@ -1,0 +1,36 @@
+<html>
+<head>
+
+</head>
+
+<body>
+  <h1>Add New Item</h1>
+  <form action="{{ url_for('addItem') }}" method="POST">
+    <div>
+      <label for="name">Item Name:</label>
+      <input type="text" maxlength="250" name="name">
+    </div>
+    <div>
+      <label for="description">Description of the Item:</label>
+      <input type="text" maxlength="250" name="description">
+    </div>
+    <div>
+      <label for="category">Category:</label>
+      <select name="category">
+        {% for c in catalog %}
+          <option value="{{ c.name }}">
+            {{c.name}}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <button type="submit">Save</button>
+      <a href={{ url_for('showCatalog') }}>
+        <button type="button">Cancel</button>
+      </a>
+    </div>
+  </form>
+
+</body>
+</html>
