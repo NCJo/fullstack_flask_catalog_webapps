@@ -14,6 +14,9 @@
   <!-- For insert title in each page -->
   <title>{% block title %}{% endblock title %}</title>
 
+  <!-- For google oauth2 (if not working, change to 1.8.2)-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="//apis.google.com/js/client:platform.js?onload=start" async defer></script>
   {% block head %}{% endblock head %}
 </head>
 <body>
