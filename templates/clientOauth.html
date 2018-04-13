@@ -48,7 +48,7 @@
                   data: authResult['code'],
                   success: function(result) {
                     if (result) {
-                      $('#result').html('Login Successul!</br>' + result + '</br>Reconnecting...')
+                      $('#result').html('Login Successful!</br>' + result + '</br>Reconnecting...')
                       setTimeout(function() {
                         window.location.href = "/catalog";
                       }, 4000);

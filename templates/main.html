@@ -1,16 +1,18 @@
-<!DOCTYPE HTML>
-<html>
-  <head>
+{% extends "prereq.html" %}
 
-  </head>
+{% block title %}Login{% endblock title %}
 
-  <body>
-    {% for category in catalog %}
-    <h3>{{ category.name }}</h3>
-    {% endfor %}
-    <br><br>
-    {% for item in items %}
-    <h4>{{ item.name }}</h4><h5>{{ item.category.name }}</h5>
-    {% endfor %}
-  </body>
-</html>
+{% block body %}
+{% include "navbar.html" %}
+{% include "flash.html" %}
+
+{% for category in catalog %}
+<h3>{{ category.name }}</h3>
+{% endfor %}
+<br><br>
+{% for item in items %}
+<h4>{{ item.name }}</h4><h5>{{ item.category.name }}</h5>
+{% endfor %}
+
+<!-- end body block -->
+{% endblock body %}
