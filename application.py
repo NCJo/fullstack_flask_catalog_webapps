@@ -234,8 +234,7 @@ def gdisconnect():
     else:
         # If the given toekn was invalid, do the following
         response = make_response(json.dumps("Failed to revoke token for given user"), 400)
-        # TODO: this section is to get rid of login_session in case the token
-        # is expired on the google server and it kept return 400
+        # If the login user stay on server too long, the token expired and return 400, so this will try reset session anyway
         try:
             del login_session['credentials']
             del login_session['gplus_id']
@@ -248,7 +247,7 @@ def gdisconnect():
             for i in login_session:
                 print i
         response.headers['Content-Type'] = 'application/json'
-        return response
+        return redirect(url_for('showCatalog'))
 ####### END #######
 
 ####################
