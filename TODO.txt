@@ -6,7 +6,4 @@
 
 TMR:
 finish:
-- clientOauth.html
-  - fix looks and flash message
-- deleteItem
 - misc css

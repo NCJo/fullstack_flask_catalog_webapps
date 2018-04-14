@@ -1,6 +1,6 @@
 {% if 'username' not in session %}
 {% else %}
-<section>
+<section id="section">
 <a href="{{ url_for('editCategory', category_name=category.name) }}">
   <button type="button" class="btn btn-warning">Edit : {{ category.name }}</button>
 </a>
