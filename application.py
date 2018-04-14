@@ -287,13 +287,14 @@ def showCatalog():
 # Route /catalog/Meats/items -> show list of items
 @app.route('/catalog/<string:category_name>/items')
 def showItems(category_name):
+    categories = session.query(Category).order_by(asc(Category.name))
     catalog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
     category = session.query(Category).filter_by(name=category_name).one()
     items_list = session.query(Items).filter_by(category = category).order_by(asc(Items.name)).all()
     count = session.query(Items).filter_by(category = category).count()
     creator = getUserInfo(category.user_id)
     if 'username' not in login_session or creator.id != login_session['user_id']:
-        return render_template('public_showItemsFromCategory.html', catalog = catalog, items = items_list, count = count)
+        return render_template('public_showItemsFromCategory.html', catalog = categories, items = items_list, count = count, category = category)
     else:
         owner = getUserInfo(login_session['user_id'])
         render_template('private_showItemsFromCategory.html', catalog = catalog, items = items_list, count = count, owner = owner)
