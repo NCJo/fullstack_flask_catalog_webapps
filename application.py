@@ -268,7 +268,10 @@ def showItems(category_name):
     category = session.query(Category).filter_by(name=category_name).one()
     items_list = session.query(Items).filter_by(category = category).order_by(asc(Items.name)).all()
     count = session.query(Items).filter_by(category = category).count()
-    creator = getUserInfo(category.user_id)
+    try:
+        creator = getUserInfo(category.user_id)
+    except:
+        print("Can't find Creator")
     if 'username' not in login_session or creator.id != login_session['user_id']:
         return render_template('public_showItemsFromCategory.html', catalog = categories, items = items_list, count = count, category = category)
     else:
