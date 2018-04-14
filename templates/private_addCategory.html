@@ -1,21 +1,25 @@
-<!DOCTYPE HTML>
-<html>
-  <head>
+{% extends "prereq.html" %}
 
-  </head>
+{% block title %}Add Category{% endblock title %}
 
-  <body>
+{% block body %}
+{% include "navbar.html" %}
+
+<section class="section">
+  <div class="section-content container">
     <h1>Add New Category</h1>
-
-    <form action="{{ url_for('addCategory') }}" method="POST">
-      <div>
-        <lablel for="name">Category Name:</lablel>
-        <input type="text" maxlength="250" name="name">
+    <form action="{{ url_for('addItem') }}" method="POST">
+      <div class="form-group">
+        <label for="name">Category Name:</label>
+        <input type="text" class="form-control" maxlength="250" name="name">
       </div>
-      <div>
-        <button type="submit">Save</button>
-        <a href="{{ url_for("showCatalog") }}"><button type="button">Cancel</button></a>
+      <div class="form-group">
+        <button type="submit" class="btn btn-outline-primary">Save</button>
+        <a href="{{ url_for('showCatalog') }}">
+          <button type="button" class="btn btn-outline-danger">Cancel</button>
+        </a>
       </div>
     </form>
-  </body>
-</html>
+  </div>
+</section>
+{% endblock body %}
