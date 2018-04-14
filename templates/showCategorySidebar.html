@@ -1,0 +1,13 @@
+<!-- Show all categories from database -->
+<div class="sidenav" >
+  <section id="showCategories">
+    <div class"col-md-3">
+      <h4 class="text-info text-center font-weight-bold">Categories</h4>
+      <div class="list-group text-center">
+        {% for c in catalog %}
+        <a href="{{ url_for('showItems', category_name=c.name) }}" class="list-group-item">{{ c.name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+</div>

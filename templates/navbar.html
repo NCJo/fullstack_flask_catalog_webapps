@@ -1,7 +1,7 @@
 <!-- .static-top is helping with preventing element get stuck behind navbar -->
 <nav class="navbar navbar-expand-lg static-top bg-dark">
       <a class="navbar-brand" href="{{ url_for('showCatalog') }}">
-        <strong>CATALOG APP</strong>
+        <h2><strong>CATALOG APP</strong></h2>
       </a>
       {% if 'username' not in session %}
       <a href="{{ url_for('showLogin') }}" class="navbar-text navbar-margin-btn">

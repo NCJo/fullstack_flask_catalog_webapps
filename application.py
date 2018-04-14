@@ -280,8 +280,8 @@ def verify_password(username_or_token, password):
 @app.route('/')
 @app.route('/catalog')
 def showCatalog():
-    catalog = session.query(Category).order_by(desc(Category.name))
-    items = session.query(Items).order_by(desc(Items.dateCreated)).limit(5)
+    catalog = session.query(Category).order_by(asc(Category.name))
+    items = session.query(Items).order_by(asc(Items.dateCreated)).limit(5)
     return render_template('main.html', catalog = catalog, items = items)
 
 # Route /catalog/Meats/items -> show list of items
