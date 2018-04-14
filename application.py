@@ -297,7 +297,7 @@ def showItems(category_name):
         return render_template('public_showItemsFromCategory.html', catalog = categories, items = items_list, count = count, category = category)
     else:
         owner = getUserInfo(login_session['user_id'])
-        render_template('private_showItemsFromCategory.html', catalog = catalog, items = items_list, count = count, owner = owner)
+        return render_template('private_showItemsFromCategory.html', catalog = categories, items = items_list, count = count, owner = owner, category = category)
 
 # Route /catalog/Meats/Ribeye -> show description of the item
 @app.route('/catalog/<string:category>/<string:item_name>')
@@ -340,7 +340,6 @@ def editCategory(category_name):
     # See if the current user is authorized to edit
     if creator.id != current_user.id:
         flash("Unauthorized Access, This category was made by %s" % creator.username)
-        print "hi"
         return redirect(url_for('showCatalog'))
     # POST
     if request.method == 'POST':
