@@ -1,0 +1,11 @@
+{% if 'username' not in session %}
+{% else %}
+<section>
+<a href="{{ url_for('editItem', category_name=item.category.name, item_name=item.name) }}">
+  <button type="button" class="btn btn-warning">Edit</button>
+</a>
+<a href="{{ url_for('deleteItem', category_name=item.category.name, item_name=item.name) }}">
+  <button type="button" class="btn btn-danger">Delete</button>
+</a>
+</section>
+{% endif %}

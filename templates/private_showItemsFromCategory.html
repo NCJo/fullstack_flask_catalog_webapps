@@ -16,11 +16,13 @@
         {% for item in items %}
         <div class="row form-group">
           <div class="col text-center">
-            <h4 class="text-center">{{ item.name }}</h4>
+            <a href="{{  url_for('showDescription', category_name=item.category.name, item_name=item.name) }}">
+              <h4 class="text-center">{{ item.name }}</h4>
+            </a>
           </div>
         </div>
         {% endfor %}
-        {% include "editAndDelete.html" %}
+        {% include "editAndDelete_category.html" %}
       </div>
     </div>
   </div>

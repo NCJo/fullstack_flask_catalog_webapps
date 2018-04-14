@@ -300,10 +300,10 @@ def showItems(category_name):
         return render_template('private_showItemsFromCategory.html', catalog = categories, items = items_list, count = count, owner = owner, category = category)
 
 # Route /catalog/Meats/Ribeye -> show description of the item
-@app.route('/catalog/<string:category>/<string:item_name>')
-def showDescription(category, item_name):
+@app.route('/catalog/<string:category_name>/<string:item_name>')
+def showDescription(category_name, item_name):
     catalog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
-    category = session.query(Category).filter_by(name=category).one()
+    category = session.query(Category).filter_by(name=category_name).one()
     item = session.query(Items).filter_by(name=item_name).one()
     creator = getUserInfo(item.user_id)
     if 'username' not in login_session or creator != login_session['user_id']:

@@ -7,6 +7,12 @@
         {% for c in catalog %}
         <a href="{{ url_for('showItems', category_name=c.name) }}" class="list-group-item">{{ c.name }}</a>
         {% endfor %}
+        {% if 'username' in session %}
+          <br>
+          <a href="{{ url_for('addCategory') }}"><button class="btn btn-outline-info">Add New Category</button></a>
+          <br>
+          <a href="{{ url_for('addItem') }}"><button class="btn btn-outline-info">Add New Item</button></a>
+        {% endif %}
       </div>
     </div>
   </section>
