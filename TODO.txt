@@ -1,1 +1,5 @@
 - Add what is being pass from backend to the html, put it in comments in each html file
+
+- in private_editItem.html
+<!-- .form-control is really good -->
+<!-- check .padding-1-5 and padding-top-10 -->

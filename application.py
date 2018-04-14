@@ -251,29 +251,6 @@ def gdisconnect():
         return response
 ####### END #######
 
-
-####### User Authorization #######
-@auth.verify_password
-def verify_password(username_or_token, password):
-    '''
-    Use token or password to verify with database
-    Return true token is matched or password associated with username is correct
-    '''
-    # Try to check for token before username
-    user_id = User.verify_auth_token(username_or_token)
-    if user_id:
-        user = session.query(User).filter_by(id = user_id).one()
-    # No token, so now checking username
-    else:
-        user = session.query(User).filter_by(username = username_or_token).first()
-        if not user or not user.verify_password(password):
-            return False
-    g.user = user
-    return True
-
-
-####### END #######
-
 ####################
 # Routes
 ####################
@@ -281,7 +258,7 @@ def verify_password(username_or_token, password):
 @app.route('/catalog')
 def showCatalog():
     catalog = session.query(Category).order_by(asc(Category.name))
-    items = session.query(Items).order_by(asc(Items.dateCreated)).limit(5)
+    items = session.query(Items).order_by(desc(Items.dateCreated)).limit(5)
     return render_template('main.html', catalog = catalog, items = items)
 
 # Route /catalog/Meats/items -> show list of items
