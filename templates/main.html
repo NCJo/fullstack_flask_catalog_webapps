@@ -16,8 +16,8 @@
         {% for item in items %}
         <div class="row form-group">
           <div class="col text-center">
-            <a href={{ url_for('showDescription', category_name=item.category.name, item_name=item.name) }}
-            <h4 class="text-center">{{ item.name }}</h4></a><a href="{{ url_for('showItems', category_name=item.category.name) }}"><h6>Category: {{ item.category.name }}</h6>
+            <a href={{ url_for('showDescription', category_name=item.category.name, item_name=item.name) }}>
+            <h4 class="text-center">{{ item.name }}</h4></a><a href="{{ url_for('showItems', category_name=item.category.name) }}"><h6 class="text-muted">Category: {{ item.category.name }}</h6>
           </div>
       </div>
       {% endfor %}

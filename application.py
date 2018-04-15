@@ -3,7 +3,8 @@ from models import Base, User, Category, Items
 
 from flask import Flask, jsonify, request, url_for, abort, g, render_template, redirect, flash
 import os
-import random, string
+import random
+import string
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
@@ -36,11 +37,17 @@ CLIENT_ID = json.loads(
 ####### END Setup #######
 
 ####### OAUTH2 GOOGLE Login #######
+
+
 @app.route('/login')
 def showLogin():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+    state = ''.join(
+        random.choice(
+            string.ascii_uppercase +
+            string.digits) for x in xrange(32))
     login_session['state'] = state
     return render_template('clientOauth.html', STATE=state)
+
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -102,7 +109,8 @@ def gconnect():
     # If an error happens along the way, then this FlowExchangeError is thrown
     # and sends the response as an JSON-object.
     except FlowExchangeError:
-        response = make_response(json.dumps('Failed to Upgrade the Authorization Code'), 401)
+        response = make_response(
+            json.dumps('Failed to Upgrade the Authorization Code'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     # After the credentials object has been received. It has to be checked if
@@ -110,7 +118,9 @@ def gconnect():
     access_token = credentials.access_token
     # If the token is appended to the following url, the Google API server can
     # verify that this is a valid token for use.
-    url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s' % access_token)
+    url = (
+        'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s' %
+        access_token)
     # Create a JSON get-request containing the url and access-token and store
     # the result of this request in a variable called result
     h = httplib2.Http()
@@ -128,14 +138,16 @@ def gconnect():
     # I do not have the correct token and should return an error.
     gplus_id = credentials.id_token['sub']
     if result['user_id'] != gplus_id:
-        response = make_response(json.dumps("Token's user ID does not match given user ID"), 401)
+        response = make_response(
+            json.dumps("Token's user ID does not match given user ID"), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     # If the client ids do not match, then app is trying to use a
     # client_id that doesn't belong to it. So I shouldn't allow for this.
     # Verify that the access token is valid for this app.
     if result['issued_to'] != CLIENT_ID:
-        response = make_response(json.dumps("Token's Client ID does not Match App's"), 401)
+        response = make_response(
+            json.dumps("Token's Client ID does not Match App's"), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     # Check if the user is already logged in
@@ -149,7 +161,8 @@ def gconnect():
     # So assuming that none of these if-statements were true, I now have a valid
     # access token and my user is successfully able to login to my server.
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current User is Already Connected'), 200)
+        response = make_response(
+            json.dumps('Current User is Already Connected'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -165,7 +178,7 @@ def gconnect():
     # token requesting the user info allowed by the token scope and store it in
     # an object called data.
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
-    params = {'access_token': credentials.access_token, 'alt':'json'}
+    params = {'access_token': credentials.access_token, 'alt': 'json'}
     answer = requests.get(userinfo_url, params=params)
     data = json.loads(answer.text)
 
@@ -177,7 +190,7 @@ def gconnect():
     try:
         login_session['username'] = data['name']
         login_session['email'] = data['email']
-    except:
+    except BaseException:
         # If can't find these params, print what is in the login_session
         for i in data:
             print(i)
@@ -201,12 +214,14 @@ def gconnect():
     return output
 
 # Disconnect Google User
+
+
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session['credentials']
     # Ensure to only disconnect a connected user
     if access_token is None:
-        response =make_response(json.dumps('Current User Not Connected'), 401)
+        response = make_response(json.dumps('Current User Not Connected'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -224,7 +239,7 @@ def gdisconnect():
             del login_session['email']
             del login_session['picture']
             del login_session['user_id']
-        except:
+        except BaseException:
             print "Remaining items in login_session 200:"
             for i in login_session:
                 print i
@@ -233,8 +248,10 @@ def gdisconnect():
         return redirect(url_for('showCatalog'))
     else:
         # If the given toekn was invalid, do the following
-        response = make_response(json.dumps("Failed to revoke token for given user"), 400)
-        # If the login user stay on server too long, the token expired and return 400, so this will try reset session anyway
+        response = make_response(
+            json.dumps("Failed to revoke token for given user"), 400)
+        # If the login user stay on server too long, the token expired and
+        # return 400, so this will try reset session anyway
         try:
             del login_session['credentials']
             del login_session['gplus_id']
@@ -242,7 +259,7 @@ def gdisconnect():
             del login_session['email']
             del login_session['picture']
             del login_session['user_id']
-        except:
+        except BaseException:
             print "Remaining items in login_session 400:"
             for i in login_session:
                 print i
@@ -253,46 +270,75 @@ def gdisconnect():
 ####################
 # Routes
 ####################
+
+
 @app.route('/')
 @app.route('/catalog')
 def showCatalog():
     catalog = session.query(Category).order_by(asc(Category.name))
     items = session.query(Items).order_by(desc(Items.dateCreated)).limit(5)
-    return render_template('main.html', catalog = catalog, items = items)
+    return render_template('main.html', catalog=catalog, items=items)
 
 # Route /catalog/Meats/items -> show list of items
+
+
 @app.route('/catalog/<string:category_name>/items')
 def showItems(category_name):
     categories = session.query(Category).order_by(asc(Category.name))
-    catalog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
+    catalog = session.query(Category).order_by(
+        desc(Category.name)).group_by(Category.name)
     category = session.query(Category).filter_by(name=category_name).one()
-    items_list = session.query(Items).filter_by(category = category).order_by(asc(Items.name)).all()
-    count = session.query(Items).filter_by(category = category).count()
+    items_list = session.query(Items).filter_by(
+        category=category).order_by(asc(Items.name)).all()
+    count = session.query(Items).filter_by(category=category).count()
     try:
         creator = getUserInfo(category.user_id)
-    except:
+    except BaseException:
         print("Can't find Creator")
     if 'username' not in login_session or creator.id != login_session['user_id']:
-        return render_template('public_showItemsFromCategory.html', catalog = categories, items = items_list, count = count, category = category)
+        return render_template(
+            'public_showItemsFromCategory.html',
+            catalog=categories,
+            items=items_list,
+            count=count,
+            category=category)
     else:
         owner = getUserInfo(login_session['user_id'])
-        return render_template('private_showItemsFromCategory.html', catalog = categories, items = items_list, count = count, owner = owner, category = category)
+        return render_template(
+            'private_showItemsFromCategory.html',
+            catalog=categories,
+            items=items_list,
+            count=count,
+            owner=owner,
+            category=category)
 
 # Route /catalog/Meats/Ribeye -> show description of the item
+
+
 @app.route('/catalog/<string:category_name>/<string:item_name>')
 def showDescription(category_name, item_name):
-    catalog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
+    catalog = session.query(Category).order_by(
+        desc(Category.name)).group_by(Category.name)
     category = session.query(Category).filter_by(name=category_name).one()
     item = session.query(Items).filter_by(name=item_name).one()
     creator = getUserInfo(item.user_id)
     if 'username' not in login_session or creator != login_session['user_id']:
-        return render_template('public_showItemDescription.html', catalog = catalog, item = item)
+        return render_template(
+            'public_showItemDescription.html',
+            catalog=catalog,
+            item=item)
     else:
         # TODO: check why need to pass these parameters
         owner = getUserInfo(login_session[user_id])
-        return render_template('private_showItemDescription.html', catalog = catalog, item = item, owner = owner)
+        return render_template(
+            'private_showItemDescription.html',
+            catalog=catalog,
+            item=item,
+            owner=owner)
 
 # Route /catalog/addcategory -> add new category
+
+
 @app.route('/catalog/addcategory', methods=['GET', 'POST'])
 @login_required
 def addCategory():
@@ -307,18 +353,24 @@ def addCategory():
         return render_template('private_addCategory.html')
 
 # Route /catalog/<category>/edit -> edit category
+
+
 @app.route('/catalog/<string:category_name>/edit', methods=['GET', 'POST'])
 @login_required
 def editCategory(category_name):
-    catalog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
-    editedCategory = session.query(Category).filter_by(name=category_name).one()
+    catalog = session.query(Category).order_by(
+        desc(Category.name)).group_by(Category.name)
+    editedCategory = session.query(
+        Category).filter_by(name=category_name).one()
     category = session.query(Category).filter_by(name=category_name).one()
     # Comparing crrent logged in user and creator
     creator = getUserInfo(editedCategory.user_id)
     current_user = getUserInfo(login_session['user_id'])
     # See if the current user is authorized to edit
     if creator.id != current_user.id:
-        flash("Unauthorized Access, This category was made by %s" % creator.username)
+        flash(
+            "Unauthorized Access, This category was made by %s" %
+            creator.username)
         return redirect(url_for('showCatalog'))
     # POST
     if request.method == 'POST':
@@ -330,18 +382,28 @@ def editCategory(category_name):
         return redirect(url_for('showCatalog'))
     else:
         # TODO: check why passing those parameters
-        return render_template('private_editCategory.html', catalog = catalog, categories = editedCategory, category = category)
+        return render_template(
+            'private_editCategory.html',
+            catalog=catalog,
+            categories=editedCategory,
+            category=category)
 
 # Route /catalog/<category>/delete -> delete category
+
+
 @app.route('/catalog/<string:category_name>/delete', methods=['GET', 'POST'])
 @login_required
 def deleteCategory(category_name):
-    catelog = session.query(Category).order_by(desc(Category.name)).group_by(Category.name)
-    deletedCategory = session.query(Category).filter_by(name=category_name).one()
+    catelog = session.query(Category).order_by(
+        desc(Category.name)).group_by(Category.name)
+    deletedCategory = session.query(
+        Category).filter_by(name=category_name).one()
     creator = getUserInfo(deletedCategory.user_id)
     current_user = getUserInfo(login_session['user_id'])
     if creator.id != current_user.id:
-        flash("Unauthorized Access, This category was made by %s" % creator.username)
+        flash(
+            "Unauthorized Access, This category was made by %s" %
+            creator.username)
         return redirect(url_for('showCatalog'))
     # POST
     if request.method == 'POST':
@@ -350,19 +412,24 @@ def deleteCategory(category_name):
         flash("Successfully Deleted Category.")
         return redirect(url_for('showCatalog'))
     else:
-        return render_template('private_deleteCategory.html', category=deletedCategory)
+        return render_template(
+            'private_deleteCategory.html',
+            category=deletedCategory)
 
 # Route /catalog/additem -> add new item
+
+
 @app.route('/catalog/additem', methods=['GET', 'POST'])
 @login_required
 def addItem():
     catalog = session.query(Category).all()
     if request.method == 'POST':
         newItemToAdd = Items(
-                        name=request.form['name'],
-                        description=request.form['description'],
-                        category=session.query(Category).filter_by(name=request.form['category']).one(),
-                        user_id=login_session['user_id'])
+            name=request.form['name'],
+            description=request.form['description'],
+            category=session.query(Category).filter_by(
+                name=request.form['category']).one(),
+            user_id=login_session['user_id'])
         session.add(newItemToAdd)
         session.commit()
         flash("Successfully Added New Item")
@@ -371,7 +438,13 @@ def addItem():
         return render_template('private_AddItem.html', catalog=catalog)
 
 # Route /catalog/category/item/edit -> edit item
-@app.route('/catalog/<string:category_name>/<string:item_name>/edit', methods=['GET', 'POST'])
+
+
+@app.route(
+    '/catalog/<string:category_name>/<string:item_name>/edit',
+    methods=[
+        'GET',
+        'POST'])
 @login_required
 def editItem(category_name, item_name):
     itemToEdit = session.query(Items).filter_by(name=item_name).one()
@@ -380,7 +453,9 @@ def editItem(category_name, item_name):
     creator = getUserInfo(itemToEdit.user_id)
     current_user = getUserInfo(login_session['user_id'])
     if creator.id != current_user.id:
-        flash("Unauthorized Access: this item was created by %s" % creator.username)
+        flash(
+            "Unauthorized Access: this item was created by %s" %
+            creator.username)
         return redirect(url_for('showCatalog'))
     if request.method == 'POST':
         if request.form['name']:
@@ -388,16 +463,26 @@ def editItem(category_name, item_name):
         if request.form['description']:
             itemToEdit.description = request.form['description']
         if request.form['category']:
-            itemToEdit.category = session.query(Category).filter_by(name=request.form['category']).one()
+            itemToEdit.category = session.query(Category).filter_by(
+                name=request.form['category']).one()
         session.add(itemToEdit)
         session.commit()
         flash("Successfully Edited Item")
         return redirect(url_for('showCatalog'))
     else:
-        return render_template('private_editItem.html', category=categories, item=itemToEdit)
+        return render_template(
+            'private_editItem.html',
+            category=categories,
+            item=itemToEdit)
 
 # Route /catalog/category/item/delete
-@app.route('/catalog/<string:category_name>/<string:item_name>/delete', methods=['GET', 'POST'])
+
+
+@app.route(
+    '/catalog/<string:category_name>/<string:item_name>/delete',
+    methods=[
+        'GET',
+        'POST'])
 @login_required
 def deleteItem(category_name, item_name):
     itemToDelete = session.query(Items).filter_by(name=item_name).one()
@@ -405,7 +490,9 @@ def deleteItem(category_name, item_name):
     creator = getUserInfo(itemToDelete.user_id)
     current_user = getUserInfo(login_session['user_id'])
     if creator.id != current_user.id:
-        flash("Unauthorized Access: this item was created by %s" % creator.username)
+        flash(
+            "Unauthorized Access: this item was created by %s" %
+            creator.username)
         return redirect(url_for('showCatalog'))
     if request.method == 'POST':
         session.delete(itemToDelete)
@@ -421,38 +508,52 @@ def deleteItem(category_name, item_name):
 def showAllItemsJSON():
     categories = session.query(Category).all()
     items = session.query(Items).all()
-    return jsonify(categories_json = [c.serialize for c in categories], items_json = [i.serialize for i in items])
+    return jsonify(
+        categories_json=[
+            c.serialize for c in categories], items_json=[
+            i.serialize for i in items])
 
 # Route show all category in JSON
+
+
 @app.route('/category.json')
 def showAllCategoryJSON():
     categories = session.query(Category).all()
-    return jsonify(categories_json = [c.serialize for c in categories])
+    return jsonify(categories_json=[c.serialize for c in categories])
 
 # Route show all items in certain categories in JSON
+
+
 @app.route('/<string:category_name>/items.json')
 def showAllItemsinCategoryJSON(category_name):
-    selected_category = session.query(Category).filter_by(name=category_name).one()
+    selected_category = session.query(
+        Category).filter_by(name=category_name).one()
     items = session.query(Items).filter_by(category=selected_category).all()
-    return jsonify(showitems_json = [i.serialize for i in items])
+    return jsonify(showitems_json=[i.serialize for i in items])
 
 ####### HELPER FUNCTIONS FOR VARIOUS TASKS #######
+
+
 def getUserID(email):
     try:
-        user = session.query(User).filter_by(email = email).one()
+        user = session.query(User).filter_by(email=email).one()
         return user.id
-    except:
+    except BaseException:
         return None
 
+
 def getUserInfo(user_id):
-    user = session.query(User).filter_by(id = user_id).one()
+    user = session.query(User).filter_by(id=user_id).one()
     return user
 
+
 def createUser(login_session):
-    newUser = User(username = login_session['username'], email = login_session['email'])
+    newUser = User(
+        username=login_session['username'],
+        email=login_session['email'])
     session.add(newUser)
     session.commit()
-    user = session.query(User).filter_by(email = login_session['email']).one()
+    user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id
 ####### END #######
 
@@ -460,4 +561,4 @@ def createUser(login_session):
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
     app.debug = True
-    app.run(host = '0.0.0.0', port = 8000)
+    app.run(host='0.0.0.0', port=8000)
